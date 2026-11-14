@@ -129,11 +129,11 @@ const PAL_PIP: OnboardingPalDef = {
     palEntry({
       tier: 'balanced',
       recommended: true,
-      repo: 'lmstudio-community/gemma-3-1b-it-GGUF',
-      filename: 'gemma-3-1b-it-Q8_0.gguf',
-      params: 999885952,
-      displayName: 'Gemma 3 1B',
-      sizeBytes: 1069306368,
+      repo: 'bartowski/Llama-3.2-1B-Instruct-GGUF',
+      filename: 'Llama-3.2-1B-Instruct-Q4_K_M.gguf',
+      params: 1235814400,
+      displayName: 'Llama 3.2 1B',
+      sizeBytes: 807694464,
     }),
     palEntry({
       tier: 'best',
