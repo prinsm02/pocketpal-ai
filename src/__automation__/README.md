@@ -107,13 +107,13 @@ On iOS, after the turns:
 ```ts
 await driver.execute('mobile: deepLink', {
   url: 'pocketpal://voice?cmd=trace%3A%3Adump',
-  bundleId: 'ai.pocketpal',
+  bundleId: 'com.prinsm02.pocketpal',
 });
 const trace = await $('~voice-trace-result').getAttribute('label');
 ```
 
 The file is the fallback: `xcrun devicectl device copy from --device <udid>
---domain-type appDataContainer --domain-identifier ai.pocketpal --source
+--domain-type appDataContainer --domain-identifier com.prinsm02.pocketpal --source
 Documents/voice-trace.txt --destination voice-trace.txt`.
 
 ## Screens

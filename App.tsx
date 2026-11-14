@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 
 import {observer} from 'mobx-react';
+import {runInAction} from 'mobx';
 import {isHydrated} from 'mobx-persist-store';
 import {NavigationContainer} from '@react-navigation/native';
 import {Provider as PaperProvider} from 'react-native-paper';
@@ -110,6 +111,18 @@ const App = observer(() => {
     initLocale(uiStore.language);
   }, []);
 
+  // Screenshot builds skip onboarding and force the dark theme after
+  // persistence has rehydrated, so the simulator capture lands on chat.
+  React.useEffect(() => {
+    if (!__SCREENSHOT_MODE__) {
+      return;
+    }
+    runInAction(() => {
+      uiStore.hasCompletedOnboarding = true;
+      uiStore.colorScheme = 'dark';
+    });
+  }, []);
+
   // Initialize TTS store (memory gate + AppState/session listeners).
   // Fire-and-forget: `init()` is idempotent and swallows its own errors.
   React.useEffect(() => {
@@ -147,6 +160,9 @@ const App = observer(() => {
                             drawerStyle: {
                               width:
                                 screenWidth > 400 ? 320 : screenWidth * 0.8,
+                              backgroundColor: theme.dark
+                                ? '#000000'
+                                : theme.colors.surface,
                             },
                             headerStyle: {
                               backgroundColor: theme.colors.background,
@@ -307,7 +323,7 @@ const HydrationHold = () => (
   <View
     testID="hydration-splash"
     style={
-      Appearance.getColorScheme() === 'dark'
+      __SCREENSHOT_MODE__ || Appearance.getColorScheme() === 'dark'
         ? splashStyles.dark
         : splashStyles.light
     }

@@ -8,8 +8,9 @@
  * must be an E2E build (`yarn ios:build:ipa`); the benchmark route does not
  * exist in production builds.
  *
- * `--app` installs over `ai.pocketpal`, which replaces an App Store copy and
- * wipes its data. Without `--app` the driver uses whatever is installed.
+ * `--app` installs over `com.prinsm02.pocketpal`. That id is separate from the
+ * App Store app (`ai.pocketpal`), so it does not replace a store install.
+ * Without `--app` the driver uses whatever is installed.
  */
 
 import * as fs from 'fs';
@@ -26,7 +27,7 @@ import {
   type BenchReportFile,
 } from '../helpers/bench-runner';
 
-export const BUNDLE_ID = 'ai.pocketpal';
+export const BUNDLE_ID = 'com.prinsm02.pocketpal';
 export const DEEP_LINK = 'pocketpal://e2e/benchmark?autostart=1';
 const APP_CONTAINER = [
   '--domain-type',

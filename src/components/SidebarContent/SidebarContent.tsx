@@ -1,13 +1,19 @@
 import React, {useContext, useEffect, useState} from 'react';
-import {TouchableOpacity, View, Alert, SectionList} from 'react-native';
+import {
+  TouchableOpacity,
+  View,
+  Alert,
+  SectionList,
+  TextInput,
+} from 'react-native';
 import {observer} from 'mobx-react';
-import {Divider, Drawer, Text} from 'react-native-paper';
+import {Divider, Text} from 'react-native-paper';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {DrawerContentComponentProps} from '@react-navigation/drawer';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {useTheme} from '../../hooks';
-import {createStyles} from './styles';
+import {createStyles, DRAWER_CORAL} from './styles';
 import {PlusDrawerItem} from './PlusDrawerItem/PlusDrawerItem';
 import {chatSessionStore, SessionMetaData} from '../../store';
 import {Menu, RenameModal, Checkbox} from '..';
@@ -22,6 +28,7 @@ import {
   StarIcon,
   TrashIcon,
   AppInfoIcon,
+  SearchIcon,
 } from '../../assets/icons';
 import {L10nContext} from '../../utils';
 import {t} from '../../locales';
@@ -106,23 +113,22 @@ const SessionItem = React.memo<SessionItemProps>(
         <TouchableOpacity
           onPress={handlePress}
           onLongPress={handleLongPress}
-          style={styles.sessionTouchable}>
-          <Drawer.Item
-            active={isActive}
-            label={session.title}
-            style={styles.sessionDrawerItem}
-            right={
-              isPinned
-                ? () => (
-                    <StarIcon
-                      width={14}
-                      height={14}
-                      fill={theme.colors.primary}
-                    />
-                  )
-                : undefined
-            }
-          />
+          style={[
+            styles.sessionTouchable,
+            styles.sessionRow,
+            isActive && styles.sessionRowActive,
+          ]}>
+          <ChatIcon width={20} height={20} fill={theme.colors.onBackground} />
+          <Text
+            numberOfLines={1}
+            style={styles.sessionLabel}
+            onPress={handlePress}
+            onLongPress={handleLongPress}>
+            {session.title}
+          </Text>
+          {isPinned ? (
+            <StarIcon width={14} height={14} fill={DRAWER_CORAL} />
+          ) : null}
         </TouchableOpacity>
         {!isSelectionMode && (
           <Menu
@@ -308,6 +314,8 @@ export const SidebarContent: React.FC<DrawerContentComponentProps> = observer(
     const [menuPosition, setMenuPosition] = useState({x: 0, y: 0});
     const [sessionToRename, setSessionToRename] =
       useState<SessionMetaData | null>(null);
+    const [searchOpen, setSearchOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
 
     const theme = useTheme();
     const styles = createStyles(theme);
@@ -316,12 +324,17 @@ export const SidebarContent: React.FC<DrawerContentComponentProps> = observer(
 
     // Convert groupedSessions to SectionList format
     // observer() HOC handles MobX reactivity, transformation is cheap
-    const sections = Object.entries(chatSessionStore.groupedSessions).map(
-      ([dateLabel, sessions]) => ({
+    const needle = searchQuery.trim().toLowerCase();
+    const sections = Object.entries(chatSessionStore.groupedSessions)
+      .map(([dateLabel, sessions]) => ({
         title: dateLabel,
-        data: sessions,
-      }),
-    );
+        data: needle
+          ? sessions.filter(session =>
+              session.title.toLowerCase().includes(needle),
+            )
+          : sessions,
+      }))
+      .filter(section => section.data.length > 0);
 
     useEffect(() => {
       chatSessionStore.loadSessionList();
@@ -543,90 +556,80 @@ export const SidebarContent: React.FC<DrawerContentComponentProps> = observer(
       ],
     );
 
-    // List header with main menu items
-    const ListHeaderComponent = React.useMemo(
-      () => (
-        <View>
-          <Drawer.Section showDivider={false}>
-            <Drawer.Item
-              label={l10n.components.sidebarContent.menuItems.chat}
-              icon={() => <ChatIcon stroke={theme.colors.primary} />}
-              onPress={() => navigateTo(ROUTES.CHAT)}
-              style={styles.menuDrawerItem}
-              testID="drawer-item-chat"
-            />
-            <Drawer.Item
-              label={l10n.components.sidebarContent.menuItems.pals}
-              icon={() => <PalIcon stroke={theme.colors.primary} />}
-              onPress={() => navigateTo(ROUTES.PALS)}
-              style={styles.menuDrawerItem}
-              testID="drawer-item-pals"
-            />
-            <Drawer.Item
-              label={l10n.components.sidebarContent.menuItems.models}
-              icon={() => <ModelIcon stroke={theme.colors.primary} />}
-              onPress={() => navigateTo(ROUTES.MODELS)}
-              style={styles.menuDrawerItem}
-              testID="drawer-item-models"
-            />
-            <Drawer.Item
-              label={l10n.components.sidebarContent.menuItems.benchmark}
-              icon={() => <BenchmarkIcon stroke={theme.colors.primary} />}
-              onPress={() => navigateTo(ROUTES.BENCHMARK)}
-              style={styles.menuDrawerItem}
-              testID="drawer-item-benchmark"
-            />
-            <Drawer.Item
-              label={l10n.components.sidebarContent.menuItems.settings}
-              icon={() => (
-                <SettingsIcon
-                  width={24}
-                  height={24}
-                  stroke={theme.colors.primary}
-                />
-              )}
-              onPress={() => navigateTo(ROUTES.SETTINGS)}
-              style={styles.menuDrawerItem}
-              testID="drawer-item-settings"
-            />
-            <PlusDrawerItem
-              onPress={() => {
-                props.navigation.closeDrawer();
-                openPlus();
-              }}
-            />
-            <Drawer.Item
-              label={l10n.components.sidebarContent.menuItems.appInfo}
-              icon={() => (
-                <AppInfoIcon
-                  width={24}
-                  height={24}
-                  stroke={theme.colors.primary}
-                />
-              )}
-              onPress={() => navigateTo(ROUTES.APP_INFO)}
-              style={styles.menuDrawerItem}
-            />
-            {/* Only show Dev Tools in debug mode */}
-            {isDebugMode && (
-              <Drawer.Item
-                label="Dev Tools"
-                icon={() => (
-                  <SettingsIcon
-                    width={24}
-                    height={24}
-                    stroke={theme.colors.primary}
-                  />
-                )}
-                onPress={() => navigateTo(ROUTES.DEV_TOOLS)}
-                style={styles.menuDrawerItem}
-              />
-            )}
-          </Drawer.Section>
-          <Divider style={styles.divider} />
-        </View>
-      ),
-      [l10n, theme, styles, navigateTo, props.navigation],
+    const iconFill = theme.colors.onBackground;
+    const menuItems = l10n.components.sidebarContent.menuItems;
+
+    const startNewChat = React.useCallback(() => {
+      chatSessionStore.resetActiveSession();
+      navigateTo(ROUTES.CHAT);
+    }, [navigateTo]);
+
+    const renderMenuRow = (
+      label: string,
+      testID: string,
+      icon: React.ReactNode,
+      route: string,
+    ) => (
+      <TouchableOpacity
+        key={testID}
+        testID={testID}
+        accessibilityRole="button"
+        onPress={() => navigateTo(route)}
+        style={styles.menuRow}>
+        {icon}
+        <Text style={styles.menuLabel}>{label}</Text>
+      </TouchableOpacity>
+    );
+
+    // List header with main menu items. New chat lives in the footer pill.
+    const ListHeaderComponent = (
+      <View>
+        {renderMenuRow(
+          menuItems.models,
+          'drawer-item-models',
+          <ModelIcon width={22} height={22} fill={iconFill} />,
+          ROUTES.MODELS,
+        )}
+        {renderMenuRow(
+          menuItems.pals,
+          'drawer-item-pals',
+          <PalIcon width={22} height={22} fill={iconFill} />,
+          ROUTES.PALS,
+        )}
+        {renderMenuRow(
+          menuItems.benchmark,
+          'drawer-item-benchmark',
+          <BenchmarkIcon width={22} height={22} fill={iconFill} />,
+          ROUTES.BENCHMARK,
+        )}
+        {renderMenuRow(
+          menuItems.settings,
+          'drawer-item-settings',
+          <SettingsIcon width={22} height={22} fill={iconFill} />,
+          ROUTES.SETTINGS,
+        )}
+        <PlusDrawerItem
+          onPress={() => {
+            props.navigation.closeDrawer();
+            openPlus();
+          }}
+        />
+        {renderMenuRow(
+          menuItems.appInfo,
+          'drawer-item-app-info',
+          <AppInfoIcon width={22} height={22} fill={iconFill} />,
+          ROUTES.APP_INFO,
+        )}
+        {isDebugMode
+          ? renderMenuRow(
+              'Dev Tools',
+              'drawer-item-dev-tools',
+              <SettingsIcon width={22} height={22} fill={iconFill} />,
+              ROUTES.DEV_TOOLS,
+            )
+          : null}
+        <Divider style={styles.divider} />
+      </View>
     );
 
     return (
@@ -634,7 +637,8 @@ export const SidebarContent: React.FC<DrawerContentComponentProps> = observer(
         <View
           style={[
             styles.contentWrapper,
-            {paddingTop: insets.top, paddingBottom: insets.bottom},
+            {paddingTop: insets.top},
+            chatSessionStore.isSelectionMode && {paddingBottom: insets.bottom},
           ]}>
           {chatSessionStore.isSelectionMode ? (
             <>
@@ -668,15 +672,68 @@ export const SidebarContent: React.FC<DrawerContentComponentProps> = observer(
               />
             </>
           ) : (
-            <SectionList
-              sections={sections}
-              keyExtractor={keyExtractor}
-              renderItem={renderItem}
-              renderSectionHeader={renderSectionHeader}
-              ListHeaderComponent={ListHeaderComponent}
-              stickySectionHeadersEnabled={false}
-              contentContainerStyle={styles.scrollViewContent}
-            />
+            <>
+              <View style={styles.header}>
+                <Text style={styles.title}>
+                  {l10n.components.sidebarContent.appTitle}
+                </Text>
+                <TouchableOpacity
+                  testID="drawer-search-button"
+                  accessibilityRole="button"
+                  accessibilityLabel={
+                    l10n.components.sidebarContent.searchChats
+                  }
+                  onPress={() => setSearchOpen(open => !open)}
+                  style={styles.iconButton}>
+                  <SearchIcon width={18} height={18} fill={iconFill} />
+                </TouchableOpacity>
+              </View>
+              {searchOpen ? (
+                <TextInput
+                  testID="drawer-search-input"
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  placeholder={l10n.components.sidebarContent.searchChats}
+                  placeholderTextColor={theme.colors.onSurfaceVariant}
+                  style={styles.searchField}
+                  autoCorrect={false}
+                  autoCapitalize="none"
+                />
+              ) : null}
+              <SectionList
+                style={styles.sessionList}
+                sections={sections}
+                keyExtractor={keyExtractor}
+                renderItem={renderItem}
+                renderSectionHeader={renderSectionHeader}
+                ListHeaderComponent={ListHeaderComponent}
+                stickySectionHeadersEnabled={false}
+                keyboardShouldPersistTaps="handled"
+                contentContainerStyle={styles.scrollViewContent}
+              />
+              <View
+                style={[
+                  styles.footer,
+                  {paddingBottom: Math.max(insets.bottom, 12)},
+                ]}>
+                <TouchableOpacity
+                  testID="drawer-item-chat"
+                  accessibilityRole="button"
+                  onPress={startNewChat}
+                  style={styles.chatPill}>
+                  <EditIcon width={18} height={18} fill="#1A1A1A" />
+                  <Text style={styles.chatPillLabel}>{menuItems.chat}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  testID="drawer-footer-settings"
+                  accessibilityRole="button"
+                  accessibilityLabel={menuItems.settings}
+                  onPress={() => navigateTo(ROUTES.SETTINGS)}
+                  style={styles.iconButton}>
+                  <SettingsIcon width={18} height={18} fill={iconFill} />
+                </TouchableOpacity>
+              </View>
+            </>
           )}
         </View>
         <RenameModal

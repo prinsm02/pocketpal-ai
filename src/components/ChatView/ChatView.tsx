@@ -1164,6 +1164,7 @@ export const ChatView = observer(
     const inputBackgroundColor = activePal?.color?.[1]
       ? activePal.color?.[1]
       : theme.colors.surface;
+    const composerChrome = theme.dark ? 'transparent' : inputBackgroundColor;
 
     // Soft cap: warn the user before the 5th HTML preview in this session.
     // Memory pressure on budget Android becomes a hazard above 5 WebViews;
@@ -1211,7 +1212,7 @@ export const ChatView = observer(
               style={[
                 styles.inputContainer,
                 inputContainerAnimatedStyle,
-                {backgroundColor: inputBackgroundColor},
+                {backgroundColor: composerChrome},
               ]}>
               <BannerRow
                 messages={messages}

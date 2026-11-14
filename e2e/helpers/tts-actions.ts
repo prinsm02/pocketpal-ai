@@ -23,7 +23,7 @@ import {withBridgeElements} from './automation-bridge';
 
 declare const driver: WebdriverIO.Browser;
 
-const IOS_BUNDLE_ID = 'ai.pocketpal';
+const IOS_BUNDLE_ID = 'com.prinsm02.pocketpal';
 const STATUS_FILENAME = 'tts-command-status.json';
 
 const POLL_INTERVAL_MS = 5000;

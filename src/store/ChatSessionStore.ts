@@ -259,6 +259,34 @@ class ChatSessionStore {
   }
 
   async loadSessionList(): Promise<void> {
+    if (__SCREENSHOT_MODE__) {
+      const now = new Date();
+      const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      const session = (
+        id: string,
+        title: string,
+        date: Date,
+        pinned: boolean,
+      ): SessionMetaData => ({
+        id,
+        title,
+        date: date.toISOString(),
+        messages: [],
+        completionSettings: defaultCompletionSettings,
+        settingsSource: 'pal',
+        pinned,
+        messagesLoaded: false,
+      });
+      runInAction(() => {
+        this.sessions = [
+          session('shot-pinned', 'Pinned note', now, true),
+          session('shot-reading', 'Reading list', now, true),
+          session('shot-today', 'Draft reply', now, false),
+          session('shot-yesterday', 'Trip ideas', yesterday, false),
+        ];
+      });
+      return;
+    }
     try {
       const sessions = await chatSessionRepository.getAllSessions();
 

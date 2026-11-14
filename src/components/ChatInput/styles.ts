@@ -22,11 +22,13 @@ export const createStyles = ({
       borderRadius: 100,
     },
     plusButton: {
-      height: 28,
-      width: 28,
+      height: 32,
+      width: 32,
       alignItems: 'center',
       justifyContent: 'center',
-      borderRadius: 100,
+      borderRadius: 16,
+      borderWidth: theme.dark ? 1 : 0,
+      borderColor: 'rgba(255,255,255,0.35)',
       opacity: 0.9,
     },
     thinkingToggle: {
@@ -89,8 +91,13 @@ export const createStyles = ({
     inputContainer: {
       flex: 1,
       flexDirection: 'column',
-      borderRadius: 12,
+      borderRadius: 28,
       overflow: 'hidden',
+      marginHorizontal: 12,
+      marginBottom: 8,
+      backgroundColor: theme.dark ? '#1C1C1E' : theme.colors.surface,
+      borderWidth: theme.dark ? 1 : 0,
+      borderColor: 'rgba(255,255,255,0.08)',
     },
     textInputArea: {
       flex: 1,

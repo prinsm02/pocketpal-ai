@@ -40,12 +40,14 @@ export const SendButton = ({
       testID="send-button"
       {...touchableOpacityProps}
       onPress={handlePress}
-      style={styles.sendButton}>
+      style={[styles.sendButton, theme.dark && styles.sendButtonCoral]}>
       {theme.icons?.sendButtonIcon?.() ?? (
         <SendIcon
-          stroke={color ?? theme.colors.inverseOnSurface}
-          width={24}
-          height={24}
+          stroke={
+            theme.dark ? '#1A1A1A' : (color ?? theme.colors.inverseOnSurface)
+          }
+          width={20}
+          height={20}
         />
       )}
     </TouchableOpacity>
@@ -60,5 +62,14 @@ const styles = StyleSheet.create({
     minWidth: 40,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  sendButtonCoral: {
+    marginLeft: 8,
+    height: 32,
+    width: 32,
+    minHeight: 32,
+    minWidth: 32,
+    borderRadius: 16,
+    backgroundColor: '#F08A6E',
   },
 });

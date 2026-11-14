@@ -18,7 +18,7 @@ import {IAP_MOCK_PORT} from './iapMockServer';
 declare const driver: WebdriverIO.Browser;
 declare const browser: WebdriverIO.Browser;
 
-export const IOS_BUNDLE_ID = 'ai.pocketpal';
+export const IOS_BUNDLE_ID = 'com.prinsm02.pocketpal';
 export const ANDROID_PACKAGE = 'com.pocketpalai.e2e';
 
 export const appId = (): string =>

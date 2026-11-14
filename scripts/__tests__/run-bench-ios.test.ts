@@ -71,7 +71,7 @@ describe('buildPlan', () => {
       'X',
       '--payload-url',
       DEEP_LINK,
-      'ai.pocketpal',
+      'com.prinsm02.pocketpal',
     ]);
   });
 

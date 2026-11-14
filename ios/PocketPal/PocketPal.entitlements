@@ -11,17 +11,8 @@
 	-->
 	<key>keychain-access-groups</key>
 	<array>
-		<string>$(AppIdentifierPrefix)ai.pocketpal</string>
+		<string>$(AppIdentifierPrefix)com.prinsm02.pocketpal</string>
 	</array>
-
-	<!--
-		Siri: Required for App Intents and Shortcuts integration
-
-		This entitlement allows the app to provide App Intents that can be invoked
-		through Siri voice commands and the Shortcuts app.
-	-->
-	<key>com.apple.developer.siri</key>
-	<true/>
 
 	<!--
 		Increased Memory Limit: Required for loading large language models
@@ -40,10 +31,5 @@
 	-->
 	<key>com.apple.developer.kernel.extended-virtual-addressing</key>
 	<true/>
-
-	<key>com.apple.developer.applesignin</key>
-	<array>
-		<string>Default</string>
-	</array>
 </dict>
 </plist>

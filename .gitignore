@@ -75,10 +75,14 @@ package-lock.json
 android/app/**/google-services.json
 ios/GoogleService-Info.plist
 
-# Environment files
+# Environment files and secret material. Commit .env.example only.
 .env
 .env.*
 !.env.example
+*.pem
+*.key
+*.p12
+*.pfx
 
 # environment config
 ios/Config/Env.xcconfig

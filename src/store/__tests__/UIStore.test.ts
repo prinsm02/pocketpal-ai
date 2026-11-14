@@ -14,6 +14,10 @@ describe('UIStore', () => {
     uiStore.setLanguage('en');
   });
 
+  it('starts on the dark theme before a saved choice', () => {
+    expect(new UIStore().colorScheme).toBe('dark');
+  });
+
   it('should initialize with default values', () => {
     expect(uiStore.pageStates).toEqual({
       modelsScreen: {

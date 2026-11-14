@@ -13,6 +13,7 @@ import 'react-native-gesture-handler/jestSetup';
 // with `(global as any).__E2E_SKIP_ONBOARDING__ = true`.
 (global as any).__E2E_SKIP_ONBOARDING__ = false;
 (global as any).__PLUS_STORE_GATE__ = true;
+(global as any).__SCREENSHOT_MODE__ = false;
 
 jest.mock('react-native-haptic-feedback');
 
