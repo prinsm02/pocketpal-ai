@@ -75,7 +75,7 @@ jobs:
             DEVELOPMENT_TEAM="" \
             build > build-device.log 2>&1 || {
               echo "xcodebuild failed. Errors:"
-              grep -nE "error:|\*\* BUILD FAILED|fatal error|Undefined symbols|No such module" build-device.log | head -60
+              grep -nEi "error|failed|undefined|cannot|not found|denied" build-device.log | grep -v "Werror\|-fno-" | cut -c1-300 | tail -60; echo ---- TAIL ----; tail -n 80 build-device.log | cut -c1-300
               exit 65
             }
 
