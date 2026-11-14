@@ -60,7 +60,7 @@ Heavy models (Phi-3.5, Phi-4-mini, Gemma-4-E2B) are last in the `full` tier; if 
 
 `yarn bench:ios` drives the same matrix with `xcrun devicectl` only (no Appium). It pushes `bench-config.json` into the app's `Documents`, sends the deep link to the already-running app (a link on cold launch is dropped), polls `Documents` for the new `benchmark-report-*.json` until the runner writes its terminal `outcome`, then pulls, stamps and pass-gates the report.
 
-> **`--app` replaces the App Store PocketPal.** iOS has no separate E2E bundle id, so installing the E2E build over `ai.pocketpal` wipes that app's data. Without `--app` the driver uses whatever is installed, which must be an E2E build.
+> **`--app` installs `com.prinsm02.pocketpal`.** That bundle id is separate from the App Store app (`ai.pocketpal`), so a sideload does not replace the store copy. Without `--app` the driver uses whatever is installed, which must be an E2E build.
 
 ```bash
 # 1. Build the E2E IPA (development signing) -> ios/build/PocketPal.ipa

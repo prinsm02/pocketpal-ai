@@ -21,7 +21,7 @@ import {withBridgeElements} from './automation-bridge';
 
 declare const driver: WebdriverIO.Browser;
 
-const IOS_BUNDLE_ID = 'ai.pocketpal';
+const IOS_BUNDLE_ID = 'com.prinsm02.pocketpal';
 const SNAPSHOTS_FILENAME = 'memory-snapshots.json';
 
 export interface MemorySnapshot {

@@ -30,7 +30,7 @@ declare const driver: WebdriverIO.Browser;
 declare const browser: WebdriverIO.Browser;
 
 const ANDROID_PACKAGE = 'com.pocketpalai.e2e';
-const IOS_BUNDLE_ID = 'ai.pocketpal';
+const IOS_BUNDLE_ID = 'com.prinsm02.pocketpal';
 const appId = (): string =>
   driver.isAndroid ? ANDROID_PACKAGE : IOS_BUNDLE_ID;
 

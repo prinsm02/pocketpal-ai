@@ -48,6 +48,7 @@ import {getRecommendedProjectionModel} from '../utils/multimodalHelpers';
 import {isModelFilePath} from '../utils/pathGuard';
 import {isDraftOnlyModel} from '../utils/mtp';
 import {getOriginalModelName} from '../utils/formatters';
+import {SIDELOAD_PICKS} from './sideloadPicks';
 import {stopQuietly} from '../utils/stopQuietly';
 import type {OnboardingPalModelEntry} from './onboarding/onboardingPals';
 
@@ -877,6 +878,10 @@ class ModelStore {
       this.removeInvalidLocalModels();
     }
 
+    // Keep the 1B Q4_K_M first-run picks at the top even when the rules
+    // resolve empty or a later fetch drops them.
+    this.pinSideloadPicks();
+
     // Upgrade past the bundled floor to the online rules override in the
     // background; reconcile (id-keyed, dedup) folds in any newer set.
     this.upgradeToFetchedRules();
@@ -1067,9 +1072,46 @@ class ModelStore {
         this.rulesVersion = fetched.rulesVersion;
       });
       this.reconcilePresets(this.resolvePresetModels(fetched, signals));
+      this.pinSideloadPicks();
     } catch (error) {
       console.warn('[ModelStore] fetched-rules upgrade failed:', error);
     }
+  };
+
+  // Move Llama 3.2 1B and Gemma 3 1B (Q4_K_M) to the front of the model list.
+  // An existing card (downloaded, or already supplied by device rules) is kept
+  // as-is. A missing card is added as a normal Hugging Face model so the rules
+  // reconciler, which only prunes rule stubs, cannot drop it.
+  private pinSideloadPicks = () => {
+    const picks = SIDELOAD_PICKS.map(pick => {
+      const modelFile: ModelFile = {
+        rfilename: pick.filename,
+        url: `https://huggingface.co/${pick.repo}/resolve/main/${pick.filename}`,
+        size: pick.sizeBytes,
+      };
+      const hfModel = {
+        id: pick.repo,
+        author: pick.repo.split('/')[0],
+        url: `https://huggingface.co/${pick.repo}`,
+        specs: {gguf: {total: pick.params}},
+        siblings: undefined,
+      } as unknown as HuggingFaceModel;
+      return {...hfAsModel(hfModel, modelFile), name: pick.displayName};
+    });
+    runInAction(() => {
+      const pickIds = new Set(picks.map(pick => pick.id));
+      const rest = this.models.filter(model => !pickIds.has(model.id));
+      const head = picks.map(
+        pick => this.models.find(model => model.id === pick.id) ?? pick,
+      );
+      const next = [...head, ...rest];
+      const unchanged =
+        next.length === this.models.length &&
+        next.every((model, index) => model === this.models[index]);
+      if (!unchanged) {
+        this.models = next;
+      }
+    });
   };
 
   // Reconcile the freshly-resolved rule presets into the model list. Keyed on the

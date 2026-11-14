@@ -42,6 +42,7 @@ import {ErrorState} from '../../utils/errors';
 import {user, assistant} from '../../utils/chat';
 
 import {VideoPalScreen} from './VideoPalScreen';
+import {ScreenshotDrawerOpener} from './ScreenshotDrawerOpener';
 
 const renderBubble = ({
   child,
@@ -305,6 +306,7 @@ export const ChatScreen: React.FC = observer(() => {
   // Otherwise, show the regular chat view
   return (
     <VoiceModeControlsContext.Provider value={voiceControls}>
+      {__SCREENSHOT_MODE__ ? <ScreenshotDrawerOpener /> : null}
       <View
         style={styles.chat}
         importantForAccessibility={chatCovered ? 'no-hide-descendants' : 'auto'}

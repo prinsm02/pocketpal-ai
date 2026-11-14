@@ -41,6 +41,7 @@ module.exports = {
     __E2E__: 'readonly',
     __E2E_SKIP_ONBOARDING__: 'readonly',
     __PLUS_STORE_GATE__: 'readonly',
+    __SCREENSHOT_MODE__: 'readonly',
   },
   ignorePatterns: [
     'coverage/',

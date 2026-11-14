@@ -9,13 +9,16 @@ module.exports = function (api) {
     const plusStoreGate =
       process.env.PLUS_STORE_GATE === 'true' ||
       (isE2E && process.env.PLUS_STORE_GATE !== 'false');
-    return `${envName}:${isE2E}:${skipOnboarding}:${plusStoreGate}`;
+    // Simulator screenshots only. Never set this for the sideload IPA.
+    const screenshotMode = process.env.SCREENSHOT_MODE === 'true';
+    return `${envName}:${isE2E}:${skipOnboarding}:${plusStoreGate}:${screenshotMode}`;
   });
-  const [envName, e2eFlag, skipFlag, gateFlag] = cacheKey.split(':');
+  const [envName, e2eFlag, skipFlag, gateFlag, shotFlag] = cacheKey.split(':');
   const isTest = envName === 'test';
   const isE2E = e2eFlag === 'true';
   const skipOnboarding = skipFlag === 'true';
   const plusStoreGate = gateFlag === 'true';
+  const screenshotMode = shotFlag === 'true';
 
   return {
     presets: ['module:@react-native/babel-preset'],
@@ -29,6 +32,7 @@ module.exports = function (api) {
                 __E2E__: isE2E,
                 __E2E_SKIP_ONBOARDING__: skipOnboarding,
                 __PLUS_STORE_GATE__: plusStoreGate,
+                __SCREENSHOT_MODE__: screenshotMode,
               },
             ],
           ]

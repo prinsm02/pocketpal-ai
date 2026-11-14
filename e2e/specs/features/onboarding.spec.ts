@@ -33,7 +33,7 @@ const TIMEOUT = 15000;
 // the matching model is the one ModelRadioGroup renders on screen 6 with
 // the Recommended badge.
 const PIP_BALANCED_MODEL_ID =
-  'lmstudio-community/gemma-3-1b-it-GGUF/gemma-3-1b-it-Q8_0.gguf';
+  'bartowski/Llama-3.2-1B-Instruct-GGUF/Llama-3.2-1B-Instruct-Q4_K_M.gguf';
 const CODIE_BALANCED_MODEL_ID =
   'lmstudio-community/Qwen3.5-2B-GGUF/Qwen3.5-2B-Q4_K_M.gguf';
 

@@ -1085,6 +1085,8 @@
       "generationBusy": "A reply is still running. Try again when it's done."
     },
     "sidebarContent": {
+      "appTitle": "PocketPal",
+      "searchChats": "Search chats",
       "menuItems": {
         "chat": "Chat",
         "models": "Models",

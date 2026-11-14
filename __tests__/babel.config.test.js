@@ -6,6 +6,7 @@ const ENV_KEYS = [
   'E2E_BUILD',
   'E2E_SKIP_ONBOARDING',
   'PLUS_STORE_GATE',
+  'SCREENSHOT_MODE',
 ];
 
 let saved;
@@ -65,6 +66,7 @@ describe('__PLUS_STORE_GATE__', () => {
       __E2E__: false,
       __E2E_SKIP_ONBOARDING__: false,
       __PLUS_STORE_GATE__: true,
+      __SCREENSHOT_MODE__: false,
     });
   });
 

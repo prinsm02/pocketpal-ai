@@ -30,7 +30,7 @@ declare const browser: WebdriverIO.Browser;
 
 // The e2e flavor uses the .e2e applicationId suffix; iOS keeps the prod bundle.
 const ANDROID_PACKAGE = 'com.pocketpalai.e2e';
-const IOS_BUNDLE_ID = 'ai.pocketpal';
+const IOS_BUNDLE_ID = 'com.prinsm02.pocketpal';
 
 // QUICK_TEST_MODEL is SmolLM2-135M (bartowski/SmolLM2-135M-Instruct-GGUF). The
 // fixture stores search/select text; the deep link needs the repo id directly.

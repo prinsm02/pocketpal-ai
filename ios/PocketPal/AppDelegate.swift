@@ -18,12 +18,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
   ) -> Bool {
     configureGgmlMetal()
-
-    // Initialize Firebase
-    // This is used exclusively for sending model benchmarks (with user consent) to Firebase.
-    // Firebase is used for App Check functionality, allowing unauthenticated users to submit their benchmark data securely.
-    RNFBAppCheckModule.sharedInstance() 
-    FirebaseApp.configure()
+    configureFirebaseIfAvailable()
 
     let delegate = ReactNativeDelegate()
     let factory = RCTReactNativeFactory(delegate: delegate)
@@ -41,6 +36,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     )
 
     return true
+  }
+
+  // Benchmark upload is the only Firebase use. A sideload build has no
+  // Firebase project, so skip configure unless a real GoogleService-Info.plist
+  // (GOOGLE_APP_ID like "1:…") is in the bundle. Calling configure() on a
+  // placeholder plist aborts launch.
+  private func configureFirebaseIfAvailable() {
+    guard
+      let path = Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist"),
+      let dict = NSDictionary(contentsOfFile: path),
+      let appId = dict["GOOGLE_APP_ID"] as? String,
+      appId.hasPrefix("1:")
+    else {
+      return
+    }
+    RNFBAppCheckModule.sharedInstance()
+    FirebaseApp.configure()
   }
 
   private func configureGgmlMetal() {

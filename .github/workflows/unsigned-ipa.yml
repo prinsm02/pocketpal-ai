@@ -1,0 +1,207 @@
+# Unsigned iOS IPA for sideload (iLoader). No signing identity, no model files.
+# Xcode 26.6 is the default on macos-26 and matches the README requirement.
+
+name: Unsigned IPA
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - cursor/iphone-sideload-chatgpt-ui-ce40
+
+permissions:
+  contents: read
+
+concurrency:
+  group: unsigned-ipa-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  XCODE_APP: /Applications/Xcode_26.6.app
+
+jobs:
+  unsigned-ipa:
+    name: Build unsigned IPA
+    runs-on: macos-26
+    timeout-minutes: 180
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode 26.6
+        run: |
+          set -euo pipefail
+          sudo xcode-select -s "$XCODE_APP"
+          xcodebuild -version
+          sudo xcodebuild -license accept || true
+          xcodebuild -downloadComponent MetalToolchain
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: yarn
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.2.3
+          bundler-cache: true
+
+      - name: Install JavaScript dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Prepare unsigned iOS config
+        run: bash scripts/prepare-unsigned-ios.sh
+
+      - name: Install CocoaPods
+        working-directory: ios
+        run: bundle exec pod install
+
+      - name: Build Release (unsigned)
+        run: |
+          set -euo pipefail
+          xcodebuild \
+            -workspace ios/PocketPal.xcworkspace \
+            -scheme PocketPal \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build/ipa \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            PROVISIONING_PROFILE_SPECIFIER="" \
+            DEVELOPMENT_TEAM="" \
+            build > build-device.log 2>&1 || {
+              echo "xcodebuild failed. Errors:"
+              grep -nEi "error|failed|undefined|cannot|not found|denied" build-device.log | grep -v "Werror\|-fno-" | cut -c1-300 | tail -60; echo ---- TAIL ----; tail -n 80 build-device.log | cut -c1-300
+              exit 65
+            }
+
+      - name: Upload build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-device-log
+          path: build-device.log
+          if-no-files-found: ignore
+
+      - name: Package unsigned IPA
+        run: |
+          set -euo pipefail
+          APP="$(find build/ipa/Build/Products/Release-iphoneos -name '*.app' -maxdepth 1 | head -1)"
+          test -n "$APP"
+          test -d "$APP"
+          rm -rf Payload
+          mkdir Payload
+          cp -R "$APP" Payload/
+          # Models download in the app. Refuse to ship a GGUF inside the IPA.
+          if find Payload -iname '*.gguf' | grep -q .; then
+            echo "Refusing to upload an IPA that contains a GGUF model."
+            exit 1
+          fi
+          zip -qry PocketPal-unsigned.ipa Payload
+          ls -lh PocketPal-unsigned.ipa
+          # Confirm the bundle id and that the binary is unsigned.
+          /usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' Payload/PocketPal.app/Info.plist
+          codesign -dv Payload/PocketPal.app || true
+
+      - name: Upload unsigned IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: PocketPal-unsigned-ipa
+          path: PocketPal-unsigned.ipa
+          if-no-files-found: error
+          retention-days: 14
+
+  simulator-screenshots:
+    name: Simulator screenshots
+    runs-on: macos-26
+    timeout-minutes: 180
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode 26.6
+        run: |
+          set -euo pipefail
+          sudo xcode-select -s "$XCODE_APP"
+          xcodebuild -version
+          sudo xcodebuild -license accept || true
+          xcodebuild -downloadComponent MetalToolchain
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: yarn
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.2.3
+          bundler-cache: true
+
+      - name: Install JavaScript dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Prepare unsigned iOS config
+        run: bash scripts/prepare-unsigned-ios.sh
+
+      - name: Install CocoaPods
+        working-directory: ios
+        run: bundle exec pod install
+
+      - name: Build Release for simulator
+        env:
+          SCREENSHOT_MODE: 'true'
+        run: |
+          set -euo pipefail
+          xcodebuild \
+            -workspace ios/PocketPal.xcworkspace \
+            -scheme PocketPal \
+            -configuration Release \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build/sim \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_ALLOWED=YES \
+            CODE_SIGNING_REQUIRED=NO \
+            PROVISIONING_PROFILE_SPECIFIER="" \
+            DEVELOPMENT_TEAM="" \
+            build
+
+      - name: Capture chat and drawer
+        run: |
+          set -euo pipefail
+          APP="$(find build/sim/Build/Products/Release-iphonesimulator -name '*.app' -maxdepth 1 | head -1)"
+          test -n "$APP"
+          # Prefer a recent iPhone. Names vary with the Xcode image.
+          DEVICE_LINE="$(xcrun simctl list devices available | grep -E 'iPhone (1[6-9]|[2-9][0-9]) ' | head -1 || true)"
+          if [[ -z "$DEVICE_LINE" ]]; then
+            DEVICE_LINE="$(xcrun simctl list devices available | grep -E 'iPhone' | head -1)"
+          fi
+          UDID="$(echo "$DEVICE_LINE" | sed -E 's/.*\(([0-9A-Fa-f-]{36})\).*/\1/')"
+          echo "Using simulator $DEVICE_LINE"
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl install "$UDID" "$APP"
+          xcrun simctl launch "$UDID" com.prinsm02.pocketpal
+          mkdir -p screenshots
+          # Chat shows first. The drawer opens itself 15s after chat mounts.
+          sleep 12
+          xcrun simctl io "$UDID" screenshot screenshots/chat.png
+          sleep 18
+          xcrun simctl io "$UDID" screenshot screenshots/drawer.png
+          sleep 15
+          xcrun simctl io "$UDID" screenshot screenshots/drawer-late.png
+          ls -lh screenshots
+
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: simulator-screenshots
+          path: screenshots/*.png
+          if-no-files-found: error
+          retention-days: 14

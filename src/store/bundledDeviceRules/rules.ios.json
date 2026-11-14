@@ -307,11 +307,22 @@
   },
   "tiers": {
     "low": {
-      "description": "4 candidate(s); primary: gemma-3-1b. Validated against community benchmarks.",
+      "description": "5 candidate(s); primary: llama-3.2-1b and gemma-3-1b Q4_K_M. Validated against community benchmarks.",
       "candidates": [
         {
+          "model": "llama-3.2-1b",
+          "display_name": "Llama 3.2 1B Q4_K_M",
+          "quant": "q4_k_m",
+          "hf_repo": "bartowski/Llama-3.2-1B-Instruct-GGUF",
+          "hf_filename": "Llama-3.2-1B-Instruct-Q4_K_M.gguf",
+          "params": 1235814400,
+          "size_bytes": 807694464,
+          "min_ram_gb": 1.4,
+          "obs_tg": 30.0
+        },
+        {
           "model": "gemma-3-1b",
-          "display_name": "Gemma 3 1B",
+          "display_name": "Gemma 3 1B Q4_K_M",
           "quant": "q4_k_m",
           "hf_repo": "ggml-org/gemma-3-1b-it-GGUF",
           "hf_filename": "gemma-3-1b-it-Q4_K_M.gguf",
